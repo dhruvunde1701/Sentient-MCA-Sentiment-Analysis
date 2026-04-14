@@ -1,6 +1,4 @@
 import re
-from collections import Counter
-
 import pandas as pd
 from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer

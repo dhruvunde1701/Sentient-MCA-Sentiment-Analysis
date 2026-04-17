@@ -6,6 +6,7 @@ import sys
 import os
 import datetime
 import json
+import base64
 
 # Add src directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
@@ -58,6 +59,7 @@ def analyze_data(df):
     """Perform complete analysis on the data"""
     sentiment_analyzer = SentimentAnalyzer()
     text_summarizer = TextSummarizer()
+    wordcloud_generator = None
 
     sentiment_results = sentiment_analyzer.analyze_comments_batch(df['comment_text'].values.tolist())
 
@@ -71,13 +73,43 @@ def analyze_data(df):
     sentiment_summaries = text_summarizer.summarize_by_sentiment(analysis_df)
     stakeholder_summaries = text_summarizer.summarize_by_stakeholder(analysis_df)
 
+    # Generate word cloud artifacts separately so analysis still succeeds if
+    # NLP resources for wordcloud tokenization are unavailable.
+    wordcloud_results = {
+        'overall_wordcloud': None,
+        'sentiment_wordclouds': {},
+        'overall_word_frequencies': {},
+        'frequency_chart_base64': None,
+        'error': None
+    }
+    try:
+        wordcloud_generator = WordCloudGenerator()
+        overall_texts = analysis_df['comment_text'].dropna().tolist()
+        overall_wordcloud = wordcloud_generator.generate_wordcloud(overall_texts, max_words=80)
+        sentiment_wordclouds = wordcloud_generator.generate_sentiment_wordclouds(analysis_df)
+        overall_word_frequencies = wordcloud_generator.get_word_frequencies(overall_texts, top_n=20)
+        frequency_chart_base64 = wordcloud_generator.create_frequency_bar_chart(
+            overall_word_frequencies,
+            title="Top Words Across All Comments"
+        )
+
+        wordcloud_results.update({
+            'overall_wordcloud': overall_wordcloud,
+            'sentiment_wordclouds': sentiment_wordclouds,
+            'overall_word_frequencies': overall_word_frequencies,
+            'frequency_chart_base64': frequency_chart_base64
+        })
+    except Exception as e:
+        wordcloud_results['error'] = str(e)
+
     return {
         'analysis_df': analysis_df,
         'overall_summary': overall_summary,
         'stakeholder_analysis': stakeholder_analysis,
         'overall_text_summary': overall_text_summary,
         'sentiment_summaries': sentiment_summaries,
-        'stakeholder_summaries': stakeholder_summaries
+        'stakeholder_summaries': stakeholder_summaries,
+        'wordcloud_results': wordcloud_results
     }
 
 def create_sentiment_pie_chart(summary):
@@ -124,12 +156,78 @@ def create_stakeholder_sentiment_chart(stakeholder_df):
     )
     return fig
 
+def inject_custom_css():
+    """Inject dashboard-like styling to match desired UI."""
+    st.markdown(
+        """
+        <style>
+            .block-container { padding-top: 1.25rem; padding-bottom: 2rem; max-width: 1250px; }
+            .stTabs [data-baseweb="tab-list"] {
+                gap: 0.25rem; background: #e9edf3; border-radius: 10px; padding: 4px;
+            }
+            .stTabs [data-baseweb="tab"] {
+                height: 38px; border-radius: 8px; font-weight: 600; color: #64748b;
+            }
+            .stTabs [aria-selected="true"] {
+                background-color: #ffffff !important; color: #0f172a !important;
+                box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
+            }
+            .dash-card {
+                border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 12px;
+                background: #ffffff; text-align: center; min-height: 108px;
+            }
+            .dash-card-title { font-size: 0.88rem; color: #64748b; font-weight: 600; margin-bottom: 8px; }
+            .dash-card-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 8px; }
+            .dash-card-sub { color: #94a3b8; font-size: 0.82rem; }
+            .panel {
+                border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; background: #ffffff;
+            }
+            .pill {
+                display: inline-block; margin: 0 8px 8px 0; padding: 5px 10px; border-radius: 999px;
+                background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; font-size: 0.82rem; font-weight: 500;
+            }
+            .list-item-warning, .list-item-success {
+                border-radius: 8px; padding: 8px 10px; margin-top: 8px; font-size: 0.92rem;
+            }
+            .list-item-warning { background: #fff7ed; border: 1px solid #fed7aa; color: #7c2d12; }
+            .list-item-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #14532d; }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+def render_metric_card(title, value, subtitle, color):
+    st.markdown(
+        f"""
+        <div class="dash-card">
+            <div class="dash-card-title">{title}</div>
+            <div class="dash-card-value" style="color:{color};">{value}</div>
+            <div class="dash-card-sub">{subtitle}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+def extract_representative_points(summary_data, max_points=4):
+    """Extract concise phrases from summarizer output."""
+    key_phrases = summary_data.get('key_phrases', [])
+    points = []
+    for phrase, _freq in key_phrases:
+        cleaned = str(phrase).strip()
+        if cleaned and cleaned.lower() not in {p.lower() for p in points}:
+            points.append(cleaned.capitalize())
+        if len(points) >= max_points:
+            break
+    return points
+
 def main():
+    inject_custom_css()
+
     if len(st.session_state.user_actions) == 0:
         log_action("session_started", {"timestamp": st.session_state.session_start.isoformat()})
 
     # Header
-    st.title("📊 E-Consultation Sentiment Analysis System")
+    st.title("E-Consultation Sentiment Analysis")
     st.markdown(
         """
         This MVP analyzes stakeholder comments from e-consultation processes, providing:
@@ -249,24 +347,30 @@ def main():
             results = st.session_state.analysis_results
 
             log_action("results_displayed", {
-                "tabs_available": ["Sentiment Analysis", "Text Summaries", "Detailed Results", "Download"]
+                "tabs_available": ["Sentiment Analysis", "AI Summary", "Word Cloud", "Detailed Results", "Download"]
             })
 
-            tab1, tab2, tab3, tab4 = st.tabs(["📊 Sentiment Analysis", "📝 Text Summaries", "📋 Detailed Results", "📅 Download"])
+            tab1, tab2, tab3, tab4, tab5 = st.tabs([
+                "Sentiment Analysis",
+                "AI Summary",
+                "Word Cloud",
+                "Detailed Results",
+                "Download"
+            ])
 
             with tab1:
-                st.subheader("Sentiment Analysis Results")
+                st.subheader("Sentiment Analysis")
 
                 summary = results['overall_summary']
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
-                    st.metric("Positive", f"{summary['positive_percentage']}%", f"{summary['positive']} comments")
+                    render_metric_card("In Agreement", f"{summary['positive_percentage']}%", f"{summary['positive']} comments", "#22c55e")
                 with col2:
-                    st.metric("Negative", f"{summary['negative_percentage']}%", f"{summary['negative']} comments")
+                    render_metric_card("In Removal", f"{summary['negative_percentage']}%", f"{summary['negative']} comments", "#ef4444")
                 with col3:
-                    st.metric("Neutral", f"{summary['neutral_percentage']}%", f"{summary['neutral']} comments")
+                    render_metric_card("In Modification", f"{summary['neutral_percentage']}%", f"{summary['neutral']} comments", "#2563eb")
                 with col4:
-                    st.metric("Avg. Sentiment", f"{summary['average_vader_score']}", "VADER Score")
+                    render_metric_card("Avg. Sentiment", f"{summary['average_vader_score']}", "Score", "#2563eb")
 
                 st.markdown("---")
 
@@ -284,37 +388,86 @@ def main():
                         st.info("No stakeholder analysis available")
 
             with tab2:
-                st.subheader("Text Summaries")
-
-                st.markdown("### 📋 Overall Summary")
+                st.subheader("AI Summary")
                 overall_summary = results['overall_text_summary']
-                st.write(overall_summary['main_summary'])
+                st.markdown(f'<div class="panel">{overall_summary["main_summary"]}</div>', unsafe_allow_html=True)
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.markdown("**Key Themes:**")
-                    for theme in overall_summary['key_themes']:
-                        st.write(f"• {theme}")
-                with col2:
-                    st.markdown("**Top Keywords:**")
-                    for word, freq in list(overall_summary['top_keywords'].items())[:5]:
-                        st.write(f"• {word}: {freq} mentions")
+                st.markdown("### Thematic Highlights")
+                themes = overall_summary.get('key_themes', [])
+                if themes:
+                    theme_html = "".join([f'<span class="pill">{theme}</span>' for theme in themes])
+                    st.markdown(theme_html, unsafe_allow_html=True)
+                else:
+                    st.info("No themes available.")
 
-                st.markdown("### 😊 Summaries by Sentiment")
-                for sentiment, summary_data in results['sentiment_summaries'].items():
-                    with st.expander(f"{sentiment.title()} Comments ({summary_data['comment_count']} comments)"):
-                        st.write(summary_data['summary'])
-                        if summary_data['key_phrases']:
-                            st.write("**Key phrases:**", ", ".join([phrase[0] for phrase in summary_data['key_phrases'][:5]]))
+                concerns = extract_representative_points(results['sentiment_summaries'].get('negative', {}), max_points=4)
+                recommendations = extract_representative_points(results['sentiment_summaries'].get('positive', {}), max_points=4)
 
-                st.markdown("### 👥 Summaries by Stakeholder")
-                for stakeholder, summary_data in results['stakeholder_summaries'].items():
-                    with st.expander(f"{stakeholder} ({summary_data['comment_count']} comments)"):
-                        st.write(summary_data['summary'])
-                        if summary_data['key_phrases']:
-                            st.write("**Key phrases:**", ", ".join([phrase[0] for phrase in summary_data['key_phrases'][:5]]))
+                st.markdown("### Main Concerns Raised")
+                if concerns:
+                    for concern in concerns:
+                        st.markdown(f'<div class="list-item-warning">{concern}</div>', unsafe_allow_html=True)
+                else:
+                    st.info("No concern points available.")
+
+                st.markdown("### Recommendations")
+                if recommendations:
+                    for rec in recommendations:
+                        st.markdown(f'<div class="list-item-success">{rec}</div>', unsafe_allow_html=True)
+                else:
+                    st.info("No recommendation points available.")
 
             with tab3:
+                st.subheader("Word Frequency Analysis")
+                wc_results = results.get('wordcloud_results', {})
+
+                if wc_results.get('error'):
+                    st.warning(
+                        "Word cloud generation encountered an issue and was skipped. "
+                        f"Details: {wc_results['error']}"
+                    )
+
+                overall_wordcloud = wc_results.get('overall_wordcloud')
+                if overall_wordcloud is not None:
+                    st.image(overall_wordcloud.to_array(), use_container_width=True)
+                else:
+                    st.info("No overall word cloud available for this dataset.")
+
+                st.markdown("### Top Keywords")
+                keyword_items = list(wc_results.get('overall_word_frequencies', {}).items())
+                if keyword_items:
+                    rows = [keyword_items[i:i+4] for i in range(0, min(len(keyword_items), 12), 4)]
+                    for row in rows:
+                        cols = st.columns(4)
+                        for idx, (word, freq) in enumerate(row):
+                            with cols[idx]:
+                                st.markdown(
+                                    f"""
+                                    <div class="dash-card">
+                                        <div class="dash-card-title">{word}</div>
+                                        <div class="dash-card-sub">{freq} mentions</div>
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+                else:
+                    st.info("No keyword frequencies available.")
+
+                freq_chart = wc_results.get('frequency_chart_base64')
+                if freq_chart:
+                    st.markdown("### Frequency Chart")
+                    st.image(base64.b64decode(freq_chart), use_container_width=True)
+
+                sentiment_wordclouds = wc_results.get('sentiment_wordclouds', {})
+                st.markdown("### Word Clouds by Sentiment")
+                if sentiment_wordclouds:
+                    for sentiment, cloud in sentiment_wordclouds.items():
+                        with st.expander(f"{sentiment.title()}"):
+                            st.image(cloud.to_array(), use_container_width=True)
+                else:
+                    st.info("No sentiment-specific word clouds available.")
+
+            with tab4:
                 st.subheader("Detailed Analysis Results")
                 st.markdown("### Individual Comment Analysis")
                 analysis_df = results['analysis_df']
@@ -350,7 +503,7 @@ def main():
                     height=400
                 )
 
-            with tab4:
+            with tab5:
                 st.subheader("Download Results")
 
                 col1, col2 = st.columns(2)

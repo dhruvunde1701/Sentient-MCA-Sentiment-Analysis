@@ -6,6 +6,8 @@ import sys
 import os
 import datetime
 import json
+import io
+import hashlib
 
 # Add src directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
@@ -31,6 +33,8 @@ if 'user_actions' not in st.session_state:
     st.session_state.user_actions = []
 if 'session_start' not in st.session_state:
     st.session_state.session_start = datetime.datetime.now()
+if 'uploaded_file_id' not in st.session_state:
+    st.session_state.uploaded_file_id = None
 
 def log_action(action, details=None):
     """Log user actions with timestamp"""
@@ -186,6 +190,87 @@ def inject_custom_styles():
         [data-testid="stAppViewContainer"],
         [data-testid="stAppViewContainer"] * {
             color: #1f2937;
+        }
+        [data-testid="stHeader"] {
+            background: #f7f9fc;
+            border-bottom: 1px solid #dbe2ea;
+        }
+        [data-testid="stToolbar"] {
+            right: 0.75rem;
+        }
+        [data-testid="stToolbar"] button {
+            color: #475569 !important;
+        }
+        [data-testid="stDecoration"] {
+            background: #f7f9fc;
+        }
+        [data-testid="stSidebar"] {
+            background: #f3f6fb;
+            border-right: 1px solid #dbe2ea;
+        }
+        [data-testid="stSidebar"] * {
+            color: #1f2937;
+        }
+        [data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] {
+            background: #ffffff;
+            border: 1px dashed #cbd5e1;
+        }
+        [data-testid="stSidebar"] .stButton > button {
+            background: #ffffff;
+            color: #1f2937;
+            border: 1px solid #cbd5e1;
+        }
+        [data-testid="stSidebar"] .stButton > button:hover {
+            border-color: #94a3b8;
+            background: #f8fafc;
+            color: #0f172a;
+        }
+        [data-testid="stExpander"] details,
+        [data-testid="stSidebar"] [data-testid="stExpander"] details {
+            background: #f8fafc;
+            border: 1px solid #dbe2ea;
+            border-radius: 10px;
+        }
+        [data-testid="stExpander"] summary,
+        [data-testid="stSidebar"] [data-testid="stExpander"] summary {
+            background: #f1f5f9 !important;
+            color: #1f2937 !important;
+            border-radius: 10px;
+        }
+        [data-testid="stExpander"] summary:hover,
+        [data-testid="stSidebar"] [data-testid="stExpander"] summary:hover {
+            background: #e8eef6 !important;
+        }
+        .stDownloadButton > button,
+        [data-testid="stSidebar"] .stDownloadButton > button {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        .stDownloadButton > button:hover,
+        [data-testid="stSidebar"] .stDownloadButton > button:hover {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            border-color: #94a3b8 !important;
+        }
+        [data-testid="stDataFrame"],
+        [data-testid="stDataEditor"] {
+            background: #ffffff !important;
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+        }
+        [data-testid="stDataFrame"] *,
+        [data-testid="stDataEditor"] * {
+            color: #1f2937 !important;
+        }
+        [data-testid="stDataFrame"] [role="grid"],
+        [data-testid="stDataEditor"] [role="grid"] {
+            background: #ffffff !important;
+        }
+        [data-testid="stDataFrame"] [role="columnheader"],
+        [data-testid="stDataEditor"] [role="columnheader"] {
+            background: #f8fafc !important;
+            color: #334155 !important;
         }
         .app-shell {
             border: 1px solid #dde3eb;
@@ -400,23 +485,32 @@ def main():
 
     # Process uploaded file
     if uploaded_file is not None:
-        try:
-            df = pd.read_csv(uploaded_file)
-            st.session_state.data = df
-            st.session_state.analysis_results = None
-            st.sidebar.success(f"File uploaded successfully! {len(df)} comments loaded.")
-            log_action("file_uploaded", {
-                "filename": uploaded_file.name,
-                "comments_count": len(df),
-                "columns": list(df.columns),
-                "file_size": uploaded_file.size
-            })
-        except Exception as e:
-            st.sidebar.error(f"Error loading file: {str(e)}")
-            log_action("file_upload_failed", {
-                "filename": uploaded_file.name if uploaded_file else "unknown",
-                "error": str(e)
-            })
+        current_file_bytes = uploaded_file.getvalue()
+        current_file_id = (
+            f"{uploaded_file.name}:{uploaded_file.size}:"
+            f"{hashlib.md5(current_file_bytes).hexdigest()}"
+        )
+        if st.session_state.uploaded_file_id != current_file_id:
+            try:
+                df = pd.read_csv(io.BytesIO(current_file_bytes))
+                st.session_state.data = df
+                st.session_state.analysis_results = None
+                st.session_state.uploaded_file_id = current_file_id
+                st.sidebar.success(f"File uploaded successfully! {len(df)} comments loaded.")
+                log_action("file_uploaded", {
+                    "filename": uploaded_file.name,
+                    "comments_count": len(df),
+                    "columns": list(df.columns),
+                    "file_size": uploaded_file.size
+                })
+            except Exception as e:
+                st.sidebar.error(f"Error loading file: {str(e)}")
+                log_action("file_upload_failed", {
+                    "filename": uploaded_file.name if uploaded_file else "unknown",
+                    "error": str(e)
+                })
+    else:
+        st.session_state.uploaded_file_id = None
 
     # Main content
     if st.session_state.data is not None:

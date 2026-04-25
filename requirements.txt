@@ -1,4 +1,4 @@
-altair @ file:///Users/ec2-user/croot/altair_1767001675291/work
+altair>=5.0.0
 appnope==0.1.4
 asttokens==3.0.1
 attrs @ file:///Users/ec2-user/croot/attrs_1774959623970/work

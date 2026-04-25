@@ -1,23 +1,96 @@
-# Web framework
-streamlit>=1.28.0
-
-# NLP and Sentiment Analysis
-textblob>=0.17.1
-vaderSentiment>=3.3.2
-nltk>=3.8.1
-
-# Text processing and summarization
-sumy>=0.11.0
-
-# Data manipulation
-pandas>=2.2.0
-numpy>=1.24.0
-
-# Visualization
-wordcloud>=1.9.2
-matplotlib>=3.7.0
-seaborn>=0.12.0
-plotly>=5.15.0
-
-# File handling
-openpyxl>=3.1.0
+altair @ file:///Users/ec2-user/croot/altair_1767001675291/work
+appnope==0.1.4
+asttokens==3.0.1
+attrs @ file:///Users/ec2-user/croot/attrs_1774959623970/work
+blinker @ file:///opt/miniconda3/conda-bld/blinker_1764332139731/work
+Bottleneck @ file:///opt/miniconda3/conda-bld/bottleneck_1761937850165/work
+breadability==0.1.20
+brotlicffi @ file:///opt/miniconda3/conda-bld/brotlicffi_1764961161487/work
+cachetools @ file:///opt/miniconda3/conda-bld/cachetools_1764867346489/work
+certifi @ file:///Users/ec2-user/croot/certifi_1767659195195/work/certifi
+cffi @ file:///opt/miniconda3/conda-bld/cffi_1761832774023/work
+chardet==7.4.2
+charset-normalizer @ file:///opt/miniconda3/conda-bld/charset-normalizer_1761744819392/work
+click @ file:///opt/miniconda3/conda-bld/click_1764332238985/work
+comm==0.2.3
+contourpy @ file:///opt/miniconda3/conda-bld/contourpy_1763643920606/work
+cycler @ file:///Users/ec2-user/croot/cycler_1766067932347/work
+Cython @ file:///Users/ec2-user/croot/cython_1770634387816/work
+debugpy==1.8.20
+decorator==5.2.1
+docopt==0.6.2
+docopt-ng==0.9.0
+et_xmlfile @ file:///Users/ec2-user/buildout/croot/et_xmlfile_1759954855491/work
+executing==2.2.1
+fonttools @ file:///Users/ec2-user/croot/fonttools_1774256494220/work
+gitdb @ file:///Users/ec2-user/buildout/croot/gitdb_1759954928055/work
+GitPython @ file:///Users/ec2-user/croot/gitpython_1767874102008/work
+idna @ file:///Users/ec2-user/buildout/croot/idna_1763763781171/work
+ipykernel==7.2.0
+ipython==9.12.0
+ipython_pygments_lexers==1.1.1
+jedi==0.19.2
+Jinja2 @ file:///Users/ec2-user/buildout/croot/jinja2_1761936793528/work
+joblib @ file:///Users/ec2-user/croot/joblib_1767868079012/work
+jsonschema @ file:///Users/ec2-user/croot/jsonschema_1767955676205/work
+jsonschema-specifications @ file:///opt/miniconda3/conda-bld/jsonschema-specifications_1762788415691/work
+jupyter_client==8.8.0
+jupyter_core==5.9.1
+kiwisolver @ file:///opt/miniconda3/conda-bld/kiwisolver_1764159406929/work
+lxml==6.0.4
+lxml_html_clean==0.4.4
+MarkupSafe @ file:///Users/ec2-user/buildout/croot/markupsafe_1759952215014/work
+matplotlib==3.10.8
+matplotlib-inline==0.2.1
+narwhals @ file:///Users/ec2-user/buildout/croot/narwhals_1761937596522/work
+nest-asyncio==1.6.0
+nltk @ file:///Users/ec2-user/croot/nltk_1775079545152/work
+numexpr @ file:///opt/miniconda3/conda-bld/numexpr_1762165517928/work
+numpy @ file:///Users/ec2-user/croot/numpy_and_numpy_base_1775209336763/work/dist/numpy-2.4.4-cp314-cp314-macosx_12_0_arm64.whl#sha256=332dc2d08df65a224c26cad565ba188693184d14fb2224bb892fd9fd1ce0631a
+openpyxl @ file:///Users/ec2-user/buildout/croot/openpyxl_1759956488874/work
+packaging==26.0
+pandas @ file:///opt/miniconda3/conda-bld/pandas_1762332181238/work/dist/pandas-2.3.3-cp314-cp314-macosx_12_0_arm64.whl#sha256=57da79e136a56bdcc16167b26420258d02d489b9b2376cc5d4f7090e9930b83a
+pandas-stubs==2.3.3.260113
+parso==0.8.6
+pexpect==4.9.0
+pillow @ file:///Users/ec2-user/croot/pillow_1772475245762/work
+platformdirs==4.9.6
+plotly @ file:///Users/ec2-user/croot/plotly_1773755115438/work
+prompt_toolkit==3.0.52
+protobuf @ file:///Users/ec2-user/croot/protobuf_1770660441533/work/bazel-bin/python/dist/protobuf-6.33.5-cp314-abi3-macosx_11_0_arm64.whl#sha256=12f2eecf1afa19d278a2e61a87b243482f7f1fc7360081b1f03f95ae1bc2ad6e
+psutil==7.2.2
+ptyprocess==0.7.0
+pure_eval==0.2.3
+pyarrow @ file:///Users/ec2-user/croot/pyarrow_1775574748238/work/python
+pycountry==26.2.16
+pycparser @ file:///Users/ec2-user/croot/pycparser_1774959675151/work
+Pygments==2.20.0
+pyparsing @ file:///opt/miniconda3/conda-bld/pyparsing_1763973789564/work
+PySocks @ file:///opt/miniconda3/conda-bld/pysocks_1761753010104/work
+python-dateutil @ file:///Users/ec2-user/buildout/croot/python-dateutil_1759952060416/work
+pytz @ file:///Users/ec2-user/croot/pytz_1773692737949/work
+pyzmq==27.1.0
+referencing @ file:///opt/miniconda3/conda-bld/referencing_1762536885811/work
+regex @ file:///Users/ec2-user/croot/regex_1772652264247/work
+requests @ file:///Users/ec2-user/croot/requests_1775066169396/work
+rpds-py @ file:///opt/miniconda3/conda-bld/rpds-py_1762366481407/work
+seaborn @ file:///Users/ec2-user/buildout/croot/seaborn_1763770204682/work
+setuptools==82.0.1
+six @ file:///Users/ec2-user/buildout/croot/six_1759951952559/work
+smmap @ file:///tmp/build/80754af9/smmap_1611694433573/work
+stack-data==0.6.3
+streamlit @ file:///Users/ec2-user/croot/streamlit-split_1772735014243/work/streamlit
+sumy==0.12.0
+tenacity @ file:///Users/ec2-user/croot/tenacity_1767184782878/work
+textblob==0.20.0
+toml @ file:///tmp/build/80754af9/toml_1616166611790/work
+tornado @ file:///Users/ec2-user/croot/tornado_1774303637024/work
+tqdm @ file:///Users/ec2-user/croot/tqdm_1771398702970/work
+traitlets==5.14.3
+types-pytz==2026.1.1.20260408
+typing_extensions @ file:///Users/ec2-user/buildout/croot/typing_extensions_1759952168048/work
+tzdata @ file:///home/task_176829656558347/croot/python-tzdata_1768296637279/work
+urllib3 @ file:///Users/ec2-user/croot/urllib3_1767810397007/work
+vaderSentiment==3.3.2
+wcwidth==0.6.0
+wordcloud @ file:///Users/ec2-user/croot/wordcloud_1769074245600/work

@@ -1,4 +1,6 @@
 import pandas as pd
+import nltk
+nltk.download('stopwords', quiet=True)
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.probability import FreqDist

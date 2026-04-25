@@ -1,5 +1,7 @@
 # E-Consultation Sentiment Analysis MVP
 
+Deployed Prototype - https://sentient-sentiment-analysis.streamlit.app/
+
 ## Overview
 
 This MVP system analyzes stakeholder comments from e-consultation processes and provides:

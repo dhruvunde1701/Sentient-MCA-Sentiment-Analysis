@@ -9,7 +9,6 @@ class SentimentAnalyzer:
         self.vader_analyzer = SentimentIntensityAnalyzer()
 
     def clean_text(self, text):
-        """Clean and preprocess text"""
         if pd.isna(text):
             return ""
         # Remove extra whitespace and normalize
@@ -17,7 +16,6 @@ class SentimentAnalyzer:
         return text
 
     def analyze_sentiment_vader(self, text):
-        """Analyze sentiment using VADER"""
         text = self.clean_text(text)
         if not text:
             return {"compound": 0, "pos": 0, "neu": 1, "neg": 0, "label": "neutral"}
@@ -41,7 +39,6 @@ class SentimentAnalyzer:
         }
 
     def analyze_sentiment_textblob(self, text):
-        """Analyze sentiment using TextBlob"""
         text = self.clean_text(text)
         if not text:
             return {"polarity": 0, "subjectivity": 0, "label": "neutral"}
@@ -61,7 +58,6 @@ class SentimentAnalyzer:
         return {"polarity": polarity, "subjectivity": subjectivity, "label": label}
 
     def analyze_comments_batch(self, comments):
-        """Analyze sentiment for a batch of comments"""
         results = []
 
         for i, comment in enumerate(comments):
@@ -84,7 +80,6 @@ class SentimentAnalyzer:
         return pd.DataFrame(results)
 
     def _get_consensus_label(self, vader_label, textblob_label):
-        """Get consensus sentiment label from both analyzers"""
         if vader_label == textblob_label:
             return vader_label
         elif "neutral" in [vader_label, textblob_label]:
@@ -94,7 +89,6 @@ class SentimentAnalyzer:
             return "neutral"
 
     def get_overall_sentiment_summary(self, df):
-        """Get overall sentiment summary statistics"""
         sentiment_counts = df["consensus_label"].value_counts()
         total_comments = len(df)
 
@@ -121,7 +115,7 @@ class SentimentAnalyzer:
     def analyze_sentiment_by_stakeholder(
         self, df, stakeholder_column="stakeholder_type"
     ):
-        """Analyze sentiment broken down by stakeholder type"""
+
         if stakeholder_column not in df.columns:
             return None
 

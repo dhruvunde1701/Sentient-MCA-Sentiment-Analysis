@@ -2,9 +2,7 @@ import pandas as pd
 import numpy as np
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
-import seaborn as sns
 from collections import Counter
-import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import re

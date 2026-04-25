@@ -1,6 +1,6 @@
 # E-Consultation Sentiment Analysis MVP
 
-[CHECK OUT THE SITE](https://sentient-sentiment-analysis.streamlit.app)
+[CHECK OUT THE SITE HERE](https://sentient-sentiment-analysis.streamlit.app)
 
 ## Overview
 

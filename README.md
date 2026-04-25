@@ -1,6 +1,6 @@
 # E-Consultation Sentiment Analysis MVP
 
-Deployed Prototype - sentient-sentiment-analysis.streamlit.app
+[Deployed Prototype](https://sentient-sentiment-analysis.streamlit.app)
 
 ## Overview
 
